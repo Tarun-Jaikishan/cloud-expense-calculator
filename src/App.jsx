@@ -1,3 +1,5 @@
+import * as XLSX from "xlsx";
+
 import { useEffect, useState } from "react";
 import { MdDelete } from "react-icons/md";
 import { FaDownload } from "react-icons/fa";
@@ -19,7 +21,7 @@ export default function App() {
   useEffect(() => {
     let val = 0;
     list.map((item) => {
-      val += item.cost * item.qty;
+      val += Number(item.cost) * Number(item.qty);
     });
     setTotal(val);
   }, [list]);
@@ -38,7 +40,7 @@ export default function App() {
               <th>Item Name</th>
               <th>Quantity / Per Kilogram</th>
               <th>Cost</th>
-              <th>Cost</th>
+              <th>Total Item Cost</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -73,7 +75,42 @@ export default function App() {
               <td className="font-bold">Total</td>
               <td className="font-bold">{total}</td>
               <td>
-                <button type="button" onClick={() => {}}>
+                <button
+                  className="btn flex gap-2 items-center"
+                  type="button"
+                  onClick={() => {
+                    let finalData = [];
+
+                    const columns = [
+                      "#",
+                      "Item Name",
+                      "Quantity / Per Kilogram",
+                      "Cost",
+                      "Total Item Cost",
+                    ];
+                    let rows = [];
+
+                    list.forEach((item, i) => {
+                      rows.push([
+                        i + 1,
+                        item.name,
+                        item.qty,
+                        item.cost,
+                        item.totalCost,
+                      ]);
+                    });
+
+                    finalData.push(columns);
+                    finalData.push(...rows);
+
+                    finalData.push([null, null, null, "Total", total]);
+
+                    const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+                    XLSX.writeFile(workbook, `Expenses.xlsx`);
+                  }}
+                >
                   <FaDownload />
                   Download
                 </button>
